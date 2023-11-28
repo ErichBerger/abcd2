@@ -3,25 +3,27 @@
 //Code for getting info from OpenAI API
 $message = null;
 $result = null;
-
+//Load session data
 if(!isset($_SESSION['log'])) {
     
     $_SESSION['log'] = array();
 }
 
 if(isset($_POST['input'])) {
+    //Makes sure the message content doesn't get too long
     if(sizeof($_SESSION['log']) > 6) {
-        $_SESSION['log'] = array_slice($_SESSION['log'], -6);
+        $_SESSION['log'] = array_slice($_SESSION['log'], -4);
     }
     $message = $_POST['input'];
     $_SESSION['log'][] = $message;
+    //PHP API Info to send
     $headers = [
         'Content-Type: application/json',
          //Change the sequence of characters to a key optained from open ai.
         //https://openai.com/blog/openai-api
-        'Authorization: Bearer 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'
+        'Authorization: Bearer sk-aLnvtnsN5CtyMSBlVdrbkFJR7hhZ8Z5OHR8HX1yup3q'
     ];
-
+    //Actual content of messages to OpenAI API
     $alt = ["model" => "gpt-4", 
         "messages" => [
             ["role" => "system", "content" => "Please limit responses to 1000 characters or fewer. Reply with How can I help? if no question is asked."], 
@@ -29,7 +31,8 @@ if(isset($_POST['input'])) {
     $alt = json_encode($alt);
 
     $ch = curl_init('https://api.openai.com/v1/chat/completions');
-    
+
+    //setting API call with headers and content
     curl_setopt_array($ch, [
         CURLOPT_HTTPHEADER => $headers,
         CURLOPT_RETURNTRANSFER => true,
@@ -37,6 +40,7 @@ if(isset($_POST['input'])) {
         CURLOPT_POSTFIELDS => $alt
     ]);
     
+    //getting the response and decoding it
     $response = (json_decode(curl_exec($ch), true))['choices'][0]['message']['content'];
     curl_close($ch);
     
@@ -44,9 +48,9 @@ if(isset($_POST['input'])) {
     
     
     /************************************************************************************/
-    
 }
 ?>
+<!-- Style inlcuded in this file, as it might be used on another page depending on use-->
 <style>
 #bot {
     text-align: center;
@@ -113,6 +117,7 @@ if(isset($_POST['input'])) {
 <div class="bot-title">A Bot Chatting on Dresses</div>
 <div class="bot-history" >
 <?php 
+    //Log. Every other should be sent or received, does the styling accordingly.
     if(isset($_SESSION['log'])) {
         $log = $_SESSION['log'];
         for ($i = 0; $i < sizeof($log); $i++) {
